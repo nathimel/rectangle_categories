@@ -1,0 +1,13 @@
+name: base
+channels:
+  - conda-forge
+dependencies:
+  - python=3.9
+  - conda==4.10.3
+  - pip
+  - scipy
+  - pytorch
+  - numpy
+  - plotnine
+  - tqdm
+prefix: /Users/nathanielimel/miniforge3
