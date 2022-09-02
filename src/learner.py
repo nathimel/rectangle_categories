@@ -1,3 +1,4 @@
+import torch
 from torch import nn
 
 # Tutorial net
@@ -25,17 +26,20 @@ class Net0(nn.Module):
         super(Net0, self).__init__()
         self.flatten = nn.Flatten()
         self.linear_relu_stack = nn.Sequential(
-            nn.Linear(4 * 4, 12),  # input dim
+            nn.Linear(4 * 4, 16),  # input dim
             nn.ReLU(),
-            nn.Linear(12, 12),
+            nn.Linear(16, 16), # hidden layer 1
             nn.ReLU(),
-            nn.Linear(12, 2),  # binary classification
+            nn.Linear(16, 16), # hidden layer 2
+            nn.ReLU(),            
+            nn.Linear(16, 1),  # binary classify into 0,1
         )
 
     def forward(self, x):
         x = self.flatten(x)
-        logits = self.linear_relu_stack(x)
-        return logits
+        logit = self.linear_relu_stack(x)
+        output = torch.sigmoid(logit)
+        return output
 
 class Net1(nn.Module):
     def __init__(self) -> None:
@@ -52,11 +56,11 @@ class Net1(nn.Module):
             nn.ReLU(),
             nn.Linear(64, 64),
             nn.ReLU(),                                    
-            nn.Linear(64, 1),  # binary classification with logits
+            nn.Linear(64, 1),  # binary classify into 0,1
         )
 
     def forward(self, x):
         x = self.flatten(x)
-        logits = self.linear_relu_stack(x)
-        # binary cross entropy with logits doesn't need sigmoid
-        return logits
+        logit = self.linear_relu_stack(x)
+        output = torch.sigmoid(logit),
+        return output

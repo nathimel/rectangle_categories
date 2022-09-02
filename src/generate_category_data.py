@@ -45,15 +45,16 @@ def concept_to_data(concept: np.ndarray) -> dict[str, list[np.ndarray]]:
         one_hot[index] = 1
         return one_hot
 
+    def concept_to_examples(concept: np.ndarray) -> list:
+        """Utility function to create a list of examples from a concept (binary 2D array)."""
+        return [get_one_hot(idx) for idx in np.argwhere(concept.flatten())]
+
     # generate positive examples
-    argw_flat = np.argwhere(concept.flatten())
-    positive_examples = [get_one_hot(idx) for idx in argw_flat]
+    positive_examples = concept_to_examples(concept)
     positive_labels = [1.0] * len(positive_examples)
 
     # generate negative examples
-    neg_concept = 1 - concept
-    argw_flat_neg = np.argwhere(neg_concept)
-    negative_examples = [1 - get_one_hot(idx) for idx in argw_flat_neg]
+    negative_examples = concept_to_examples(1 - concept)
     negative_labels = [0.0] * len(negative_examples)
 
     data = {
