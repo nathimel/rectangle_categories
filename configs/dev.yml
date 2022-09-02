@@ -3,7 +3,7 @@ filepaths:
   dataset: outputs/dev/dataset.npz
 
 # network hyperparams
-num_epochs: 5
+num_epochs: 400
 batch_size: 8
 learning_rate: 1e-3
 
