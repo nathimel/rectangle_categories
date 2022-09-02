@@ -2,14 +2,33 @@ import sys
 import torch
 import numpy as np
 from torch import nn
+from tqdm import tqdm
 from torch.utils.data import DataLoader, TensorDataset
-
+import pandas as pd
+import plotnine as pn
 import learner
 import util
 
 
-def train(dataloader, model, loss_fn, optimizer) -> float:
-    """Train the NN and return the average loss value over all epochs.
+def train(
+    dataloader: DataLoader, 
+    model: nn.Module, 
+    loss_fn: nn.modules.loss._Loss, 
+    optimizer: torch.optim.Optimizer, 
+    verbose: bool = False
+    ) -> float:
+    """Train the NN on a category and return the average loss value over all epochs.
+
+    Args:
+        dataloader: a pytorch DataLoader object containing the dataset for one category.
+
+        model: the neural network learner to train
+
+        loss_fn: the loss function to optimize, e.g. BCELoss
+
+        optimizer: the optimization algorithm to use, e.g. SGD, Adam, etc.
+
+        verbose: a bool representing whether to print intermediate information during training.
     """
     running_loss = 0
 
@@ -21,8 +40,8 @@ def train(dataloader, model, loss_fn, optimizer) -> float:
         # Compute prediction error
         pred = model(X)
 
-        print("TARGET: ", y.unsqueeze(1))
-        print("PREDICTION: ", pred)
+        if verbose: print("TARGET: ", y.unsqueeze(1))
+        if verbose: print("PREDICTION: ", pred)
 
         loss = loss_fn(pred, y.unsqueeze(1)) # expand y to shape [batch_size, 1]
 
@@ -35,13 +54,30 @@ def train(dataloader, model, loss_fn, optimizer) -> float:
         optimizer.step()
 
         loss, current = loss.item(), batch * len(X)
-        print(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
+        if verbose: print(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
 
     # calculate avg loss over an epoch
     running_loss /= len(dataloader.sampler)
     return running_loss
 
-def test(dataloader, model, loss_fn):
+def test(
+    dataloader: DataLoader, 
+    model: nn.Module, 
+    loss_fn: nn.modules.loss._Loss, 
+    verbose: bool = False,
+    ) -> None:
+    """Evaluate the neural network learner on a category.
+
+    Args: 
+        dataloader: a pytorch DataLoader object containing the dataset for one category.
+
+        model: the neural network learner to test
+
+        loss_fn: the loss function to evaluate on, e.g. BCELoss
+
+        verbose: a bool representing whether to print intermediate information during training.
+    """
+
     size = len(dataloader.dataset)
     num_batches = len(dataloader)
     model.eval()
@@ -50,15 +86,11 @@ def test(dataloader, model, loss_fn):
         for X, y in dataloader:
             X, y = X.to(device, dtype=torch.float), y.to(device, dtype=torch.float)
             pred = model(X)
-            # print("VALUE OF MODEL PREDICTION: ", pred)
-            # print("VALUE OF LABELS: ", y)
             test_loss += loss_fn(pred, y.unsqueeze(1)).item()
-
-            # pred = np.round(pred.detach().numpy(), decimals=2)
             correct += (torch.round(pred) == y).type(torch.float).sum().detach().numpy()
     test_loss /= num_batches
     correct /= size
-    print(
+    if verbose: print(
         f"Test Error: \n Accuracy: {(100*correct):>0.1f}%, Avg loss: {test_loss:>8f} \n"
     )
 
@@ -80,6 +112,8 @@ def train_learners(
     num_learners: int = 1,
     epochs: int = 4,
     lr: float = 1e-3,
+    category_name: str = None,
+    verbose: bool = False,
     ) -> np.ndarray:
     """Train one or more NNs and return their avg losses over epochs as a measure of learning effort.
 
@@ -92,27 +126,33 @@ def train_learners(
 
         lr: learning rate
 
+        category_name: the name of the category (e.g. "1")
+
+        verbose: a bool representing whether to print intermediate information during training.
+
     Returns:
         avg_losses: a numpy array of shape `(num_learners)` representing each learner's loss value averaged over epochs and batches.
     """
+    if category_name is not None:
+        print(f"Training {num_learners} learners on Category {category_name}.")
 
     # For each learner in sample:
     avg_losses = []
-    for learner_num in range(num_learners):
+    for learner_num in tqdm(range(num_learners)):
 
         # Initialize model and parameters
         model = learner.Net0().to(device)
-        print(model)
+        if verbose: print(model)
         loss_fn = torch.nn.BCELoss()
         optimizer = torch.optim.SGD(model.parameters(), lr=lr)
 
         # Main training loop
         running_loss = 0
         for t in range(epochs):
-            print(f"Epoch {t+1}\n-------------------------------")
-            running_loss += train(train_dataloader, model, loss_fn, optimizer)
+            if verbose: print(f"Epoch {t+1}\n-------------------------------")
+            running_loss += train(train_dataloader, model, loss_fn, optimizer, verbose=verbose)
             test(train_dataloader, model, loss_fn)
-        print(f"Learner {learner_num} done!")
+        if verbose: print(f"Learner {learner_num} done!")
 
         running_loss /= epochs
         # record the avg loss on the category for one learner
@@ -137,7 +177,9 @@ def main():
     sample_size = configs["sample_size"]
     lr = float(configs["learning_rate"])
     dataset_folder = configs["filepaths"]["datasets"]
+    sample_loss_fn = configs["filepaths"]["sample_loss"]    
     results_fn = configs["filepaths"]["learning_results"]
+    verbose = configs["verbose"]
 
     # For each category, construct a dataset (loader), and train a sample of neural learners on it.
     dataloaders = [
@@ -148,47 +190,85 @@ def main():
         ]
 
 
-    # train each learner and collect their avg losses
-    kwargs = {"num_learners": sample_size, "epochs": epochs, "lr": lr}
-    category_results = [
-        train_learners(loader, **kwargs)
-        for loader in dataloaders
-    ]
+    # Record the loss evolution for one learner on each category for inspection
+    print("Training one learner on all categories for sample loss trajectories.")
 
-    # print("category results: ", category_results)
-
-    # save NN category learning results
-    util.save_learning_results(results_fn, category_results)
-
-    """
-    # debug loss
-    train_dataloader = dataloaders[0]
     model = learner.Net0().to(device)
     loss_fn = torch.nn.BCELoss()
     optimizer = torch.optim.SGD(model.parameters(), lr=lr)
+    category_losses = []
 
-    # Main training loop
-    losses = []
-    for t in range(epochs):
-        print(f"Epoch {t+1}\n-------------------------------")
-        losses.append(train(train_dataloader, model, loss_fn, optimizer))
-        test(train_dataloader, model, loss_fn)
-    print("Done!")
+    for train_dataloader in dataloaders:
+        losses = []
+        for t in tqdm(range(epochs)):
+            if verbose: print(f"Epoch {t+1}\n-------------------------------")
+            losses.append(train(train_dataloader, model, loss_fn, optimizer, verbose))
+            test(train_dataloader, model, loss_fn, verbose)
+        if verbose: print("Done!")
+        category_losses.append(losses)
 
-    import pandas as pd
-    import plotnine as pn
-    df = pd.DataFrame(data={"epochs": range(epochs), "loss": losses})
-    plot = (
-        pn.ggplot(data=df, mapping=pn.aes(x="epochs", y="loss"))
-        + pn.geom_line(size=1, data=df)
-        + pn.xlab("Epochs")
-        + pn.ylab("Loss")
-        + pn.scale_color_cmap("cividis")
-    )
-    util.save_plot("loss.png", plot)
-    print("LOSS DATAFRAME: \n-------------------------------")
+
+    points = [(str(category_name+1), epoch, loss) for category_name in range(len(category_losses)) for epoch, loss in enumerate(category_losses[category_name])]
+    df = pd.DataFrame(points, columns=["Concept", "Epoch", "Loss"])
+    print("DATAFRAME: ")
     print(df)
-    """
+
+    # df = pd.DataFrame(data={"epochs": range(epochs), "loss": losses})
+
+    color_dict = {
+        '1': 'red',
+        '2': 'blue',
+        '3': 'green',
+        '4': 'darkblue',
+        '5': 'orange',
+        '6': 'violet',
+        '7': 'yellow',
+        '8': 'pink',
+        '9': 'lawngreen',
+        '10': 'darkmagenta',
+        '11': 'mediumslateblue',
+        '12': 'aquamarine',
+    }
+    plot = (
+        pn.ggplot(data=df, mapping=pn.aes(x="Epoch", y="Loss")) # thanks plotnine for preventing discrete color mappings, this isn't tedious at all
+        + pn.geom_line(data=df[df["Concept"]=="1"], color="red")
+        + pn.geom_line(data=df[df["Concept"]=="2"], color="blue")
+        + pn.geom_line(data=df[df["Concept"]=="3"], color="green")
+        + pn.geom_line(data=df[df["Concept"]=="4"], color="darkblue")
+        + pn.geom_line(data=df[df["Concept"]=="5"], color="orange")
+        + pn.geom_line(data=df[df["Concept"]=="6"], color="violet")
+        + pn.geom_line(data=df[df["Concept"]=="7"], color="yellow")
+        + pn.geom_line(data=df[df["Concept"]=="8"], color="pink")
+        + pn.geom_line(data=df[df["Concept"]=="9"], color="lawngreen")
+        + pn.geom_line(data=df[df["Concept"]=="10"], color="darkmagenta")
+        + pn.geom_line(data=df[df["Concept"]=="11"], color="mediumslateblue")
+        + pn.geom_line(data=df[df["Concept"]=="12"], color="aquamarine")
+        + pn.xlab("Epoch")
+        + pn.ylab("Loss")
+    )
+    util.save_plot(sample_loss_fn, plot)
+    if verbose: print("LOSS DATAFRAME: \n-------------------------------")
+    if verbose: print(df)
+
+
+    ############################################################################
+    # Main learning experiment
+    ############################################################################
+
+    # # train each learner and collect their avg losses
+    # kwargs = {"num_learners": sample_size, "epochs": epochs, "lr": lr, "verbose": verbose}
+    # category_results = [
+    #     train_learners(
+    #         loader, 
+    #         **kwargs, 
+    #         category_name=str(i+1),
+    #         )
+    #     for i, loader in enumerate(dataloaders)
+    # ]
+
+    # # save NN category learning results
+    # util.save_learning_results(results_fn, category_results)
+
 
 if __name__ == "__main__":
     device = "cuda" if torch.cuda.is_available() else "cpu"

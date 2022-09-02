@@ -1,13 +1,13 @@
-name: base
+name: rectangles
 channels:
   - conda-forge
 dependencies:
-  - python=3.9
-  - conda==4.10.3
-  - pip
-  - scipy
+  - pyyaml
   - pytorch
-  - numpy
+  - python
+  - black
   - plotnine
+  - pandas
+  - numpy
   - tqdm
-prefix: /Users/nathanielimel/miniforge3
+prefix: /Users/nathanielimel/miniforge3/envs/rectangles
