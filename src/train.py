@@ -11,12 +11,12 @@ import util
 
 
 def train(
-    dataloader: DataLoader, 
-    model: nn.Module, 
-    loss_fn: nn.modules.loss._Loss, 
-    optimizer: torch.optim.Optimizer, 
-    verbose: bool = False
-    ) -> float:
+    dataloader: DataLoader,
+    model: nn.Module,
+    loss_fn: nn.modules.loss._Loss,
+    optimizer: torch.optim.Optimizer,
+    verbose: bool = False,
+) -> float:
     """Train the NN on a category and return the average loss value over all epochs.
 
     Args:
@@ -40,10 +40,12 @@ def train(
         # Compute prediction error
         pred = model(X)
 
-        if verbose: print("TARGET: ", y.unsqueeze(1))
-        if verbose: print("PREDICTION: ", pred)
+        if verbose:
+            print("TARGET: ", y.unsqueeze(1))
+        if verbose:
+            print("PREDICTION: ", pred)
 
-        loss = loss_fn(pred, y.unsqueeze(1)) # expand y to shape [batch_size, 1]
+        loss = loss_fn(pred, y.unsqueeze(1))  # expand y to shape [batch_size, 1]
 
         # record loss
         running_loss += loss.item() * X.size(0)
@@ -54,21 +56,23 @@ def train(
         optimizer.step()
 
         loss, current = loss.item(), batch * len(X)
-        if verbose: print(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
+        if verbose:
+            print(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
 
     # calculate avg loss over an epoch
     running_loss /= len(dataloader.sampler)
     return running_loss
 
+
 def test(
-    dataloader: DataLoader, 
-    model: nn.Module, 
-    loss_fn: nn.modules.loss._Loss, 
+    dataloader: DataLoader,
+    model: nn.Module,
+    loss_fn: nn.modules.loss._Loss,
     verbose: bool = False,
-    ) -> None:
+) -> None:
     """Evaluate the neural network learner on a category.
 
-    Args: 
+    Args:
         dataloader: a pytorch DataLoader object containing the dataset for one category.
 
         model: the neural network learner to test
@@ -90,14 +94,14 @@ def test(
             correct += (torch.round(pred) == y).type(torch.float).sum().detach().numpy()
     test_loss /= num_batches
     correct /= size
-    if verbose: print(
-        f"Test Error: \n Accuracy: {(100*correct):>0.1f}%, Avg loss: {test_loss:>8f} \n"
-    )
+    if verbose:
+        print(
+            f"Test Error: \n Accuracy: {(100*correct):>0.1f}%, Avg loss: {test_loss:>8f} \n"
+        )
 
 
 def get_dataloader(fn: str, batch_size: int) -> DataLoader:
-    """Get the pytorch DataLoader for the data contained at a filepath specifying the data generated for a category.
-    """
+    """Get the pytorch DataLoader for the data contained at a filepath specifying the data generated for a category."""
     raw_data = util.load_category_data(fn=fn)
     X = raw_data["X"]
     y = raw_data["y"]
@@ -107,6 +111,7 @@ def get_dataloader(fn: str, batch_size: int) -> DataLoader:
     train_dataloader = DataLoader(training_data, batch_size=batch_size)
     return train_dataloader
 
+
 def train_learners(
     train_dataloader: DataLoader,
     num_learners: int = 1,
@@ -114,7 +119,7 @@ def train_learners(
     lr: float = 1e-3,
     category_name: str = None,
     verbose: bool = False,
-    ) -> np.ndarray:
+) -> np.ndarray:
     """Train one or more NNs and return their avg losses over epochs as a measure of learning effort.
 
     Args:
@@ -142,22 +147,28 @@ def train_learners(
 
         # Initialize model and parameters
         model = learner.Net0().to(device)
-        if verbose: print(model)
+        if verbose:
+            print(model)
         loss_fn = torch.nn.BCELoss()
         optimizer = torch.optim.SGD(model.parameters(), lr=lr)
 
         # Main training loop
         running_loss = 0
         for t in range(epochs):
-            if verbose: print(f"Epoch {t+1}\n-------------------------------")
-            running_loss += train(train_dataloader, model, loss_fn, optimizer, verbose=verbose)
+            if verbose:
+                print(f"Epoch {t+1}\n-------------------------------")
+            running_loss += train(
+                train_dataloader, model, loss_fn, optimizer, verbose=verbose
+            )
             test(train_dataloader, model, loss_fn)
-        if verbose: print(f"Learner {learner_num} done!")
+        if verbose:
+            print(f"Learner {learner_num} done!")
 
         running_loss /= epochs
         # record the avg loss on the category for one learner
         avg_losses.append(running_loss)
     return np.array(avg_losses)
+
 
 ##############################################################################
 # Main driver code
@@ -177,18 +188,17 @@ def main():
     sample_size = configs["sample_size"]
     lr = float(configs["learning_rate"])
     dataset_folder = configs["filepaths"]["datasets"]
-    sample_loss_fn = configs["filepaths"]["sample_loss"]    
+    sample_loss_fn = configs["filepaths"]["sample_loss"]
     results_fn = configs["filepaths"]["learning_results"]
     verbose = configs["verbose"]
 
     # For each category, construct a dataset (loader), and train a sample of neural learners on it.
     dataloaders = [
         get_dataloader(
-            fn=f"{dataset_folder}/{i}.npz", # clean this up
-            batch_size=batch_size
-            ) for i in range(1, 13)
-        ]
-
+            fn=f"{dataset_folder}/{i}.npz", batch_size=batch_size  # clean this up
+        )
+        for i in range(1, 13)
+    ]
 
     # Record the loss evolution for one learner on each category for inspection
     print("Training one learner on all categories for sample loss trajectories.")
@@ -201,73 +211,64 @@ def main():
     for train_dataloader in dataloaders:
         losses = []
         for t in tqdm(range(epochs)):
-            if verbose: print(f"Epoch {t+1}\n-------------------------------")
+            if verbose:
+                print(f"Epoch {t+1}\n-------------------------------")
             losses.append(train(train_dataloader, model, loss_fn, optimizer, verbose))
             test(train_dataloader, model, loss_fn, verbose)
-        if verbose: print("Done!")
+        if verbose:
+            print("Done!")
         category_losses.append(losses)
 
-
-    points = [(str(category_name+1), epoch, loss) for category_name in range(len(category_losses)) for epoch, loss in enumerate(category_losses[category_name])]
-    df = pd.DataFrame(points, columns=["Concept", "Epoch", "Loss"])
-    print("DATAFRAME: ")
-    print(df)
-
-    # df = pd.DataFrame(data={"epochs": range(epochs), "loss": losses})
-
-    color_dict = {
-        '1': 'red',
-        '2': 'blue',
-        '3': 'green',
-        '4': 'darkblue',
-        '5': 'orange',
-        '6': 'violet',
-        '7': 'yellow',
-        '8': 'pink',
-        '9': 'lawngreen',
-        '10': 'darkmagenta',
-        '11': 'mediumslateblue',
-        '12': 'aquamarine',
-    }
+    # create dataframe and plot to visualize losses
+    points = [
+        (
+            epoch,
+            loss,
+            str(category_name + 1),
+        )
+        for category_name in range(len(category_losses))
+        for epoch, loss in enumerate(category_losses[category_name])
+    ]
+    df = pd.DataFrame(
+        points,
+        columns=[
+            "Epoch",
+            "Loss",
+            "Concept",
+        ],
+    )
+    df_categorical = df.assign(Concept=pd.Categorical(df['Concept'], categories=[str(i+1) for i in range(len(category_losses))])) # preserve order in legend
     plot = (
-        pn.ggplot(data=df, mapping=pn.aes(x="Epoch", y="Loss")) # thanks plotnine for preventing discrete color mappings, this isn't tedious at all
-        + pn.geom_line(data=df[df["Concept"]=="1"], color="red")
-        + pn.geom_line(data=df[df["Concept"]=="2"], color="blue")
-        + pn.geom_line(data=df[df["Concept"]=="3"], color="green")
-        + pn.geom_line(data=df[df["Concept"]=="4"], color="darkblue")
-        + pn.geom_line(data=df[df["Concept"]=="5"], color="orange")
-        + pn.geom_line(data=df[df["Concept"]=="6"], color="violet")
-        + pn.geom_line(data=df[df["Concept"]=="7"], color="yellow")
-        + pn.geom_line(data=df[df["Concept"]=="8"], color="pink")
-        + pn.geom_line(data=df[df["Concept"]=="9"], color="lawngreen")
-        + pn.geom_line(data=df[df["Concept"]=="10"], color="darkmagenta")
-        + pn.geom_line(data=df[df["Concept"]=="11"], color="mediumslateblue")
-        + pn.geom_line(data=df[df["Concept"]=="12"], color="aquamarine")
+        pn.ggplot(
+            data=df_categorical, mapping=pn.aes(x="Epoch", y="Loss")
+        )
+        + pn.geom_line(pn.aes(color="Concept"))
         + pn.xlab("Epoch")
         + pn.ylab("Loss")
     )
     util.save_plot(sample_loss_fn, plot)
-    if verbose: print("LOSS DATAFRAME: \n-------------------------------")
-    if verbose: print(df)
-
+    if verbose:
+        print("LOSS DATAFRAME: \n-------------------------------")
+    if verbose:
+        print(df)
 
     ############################################################################
     # Main learning experiment
     ############################################################################
 
-    # # train each learner and collect their avg losses
-    # kwargs = {"num_learners": sample_size, "epochs": epochs, "lr": lr, "verbose": verbose}
-    # category_results = [
-    #     train_learners(
-    #         loader, 
-    #         **kwargs, 
-    #         category_name=str(i+1),
-    #         )
-    #     for i, loader in enumerate(dataloaders)
-    # ]
+    # train each learner and collect their avg losses
+    kwargs = {"num_learners": sample_size, "epochs": epochs, "lr": lr, "verbose": verbose}
+    category_results = [
+        train_learners(
+            loader,
+            **kwargs,
+            category_name=str(i+1),
+            )
+        for i, loader in enumerate(dataloaders)
+    ]
 
-    # # save NN category learning results
-    # util.save_learning_results(results_fn, category_results)
+    # save NN category learning results
+    util.save_learning_results(results_fn, category_results)
 
 
 if __name__ == "__main__":

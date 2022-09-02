@@ -58,8 +58,8 @@ def concept_to_data(concept: np.ndarray) -> dict[str, list[np.ndarray]]:
     negative_labels = [0.0] * len(negative_examples)
 
     data = {
-        "X": np.array(positive_examples + negative_examples), # shape (16,16)
-        "y": np.array(positive_labels + negative_labels), # shape (16,)
+        "X": np.array(positive_examples + negative_examples),  # shape (16,16)
+        "y": np.array(positive_labels + negative_labels),  # shape (16,)
     }
     return data
 
@@ -78,6 +78,7 @@ def main():
     for name, category_data in categories.items():
         data = concept_to_data(category_data["concept"])
         util.save_category_data(fn=to_fn(name), data=data)
+
 
 if __name__ == "__main__":
     main()
