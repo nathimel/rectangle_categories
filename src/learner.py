@@ -62,5 +62,5 @@ class Net1(nn.Module):
     def forward(self, x):
         x = self.flatten(x)
         logit = self.linear_relu_stack(x)
-        output = torch.sigmoid(logit),
+        output = torch.sigmoid(logit)
         return output

@@ -1,5 +1,5 @@
 # experiment params
-sample_size: 5 # number of NNs to train on each category
+sample_size: 16 # number of NNs to train on each category
 
 # files
 filepaths:

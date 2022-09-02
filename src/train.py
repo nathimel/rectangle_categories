@@ -16,11 +16,15 @@ def train(dataloader, model, loss_fn, optimizer) -> float:
     size = len(dataloader.dataset)
     model.train()
     for batch, (X, y) in enumerate(dataloader):
-        X, y = X.to(device, dtype=torch.float), y.to(device, dtype=torch.int64)
+        X, y = X.to(device, dtype=torch.float), y.to(device, dtype=torch.float)
 
         # Compute prediction error
         pred = model(X)
-        loss = loss_fn(pred, y.unsqueeze(1).float()) # expand y to shape [batch_size, 1]
+
+        print("TARGET: ", y.unsqueeze(1))
+        print("PREDICTION: ", pred)
+
+        loss = loss_fn(pred, y.unsqueeze(1)) # expand y to shape [batch_size, 1]
 
         # record loss
         running_loss += loss.item() * X.size(0)
@@ -44,12 +48,14 @@ def test(dataloader, model, loss_fn):
     test_loss, correct = 0, 0
     with torch.no_grad():
         for X, y in dataloader:
-            X, y = X.to(device, dtype=torch.float), y.to(device, dtype=torch.int64)
+            X, y = X.to(device, dtype=torch.float), y.to(device, dtype=torch.float)
             pred = model(X)
-            print("VALUE OF MODEL PREDICTION: ", pred)
-            print("VALUE OF LABELS: ", y)
-            test_loss += loss_fn(pred, y.unsqueeze(1).float()).item()
-            correct += (torch.round(pred, decimals=2) == y).type(torch.float).sum().item()
+            # print("VALUE OF MODEL PREDICTION: ", pred)
+            # print("VALUE OF LABELS: ", y)
+            test_loss += loss_fn(pred, y.unsqueeze(1)).item()
+
+            # pred = np.round(pred.detach().numpy(), decimals=2)
+            correct += (torch.round(pred) == y).type(torch.float).sum().detach().numpy()
     test_loss /= num_batches
     correct /= size
     print(
@@ -95,9 +101,9 @@ def train_learners(
     for learner_num in range(num_learners):
 
         # Initialize model and parameters
-        model = learner.Net1().to(device)
+        model = learner.Net0().to(device)
         print(model)
-        loss_fn = nn.functional.binary_cross_entropy
+        loss_fn = torch.nn.BCELoss()
         optimizer = torch.optim.SGD(model.parameters(), lr=lr)
 
         # Main training loop
@@ -141,7 +147,7 @@ def main():
             ) for i in range(1, 13)
         ]
 
-    """
+
     # train each learner and collect their avg losses
     kwargs = {"num_learners": sample_size, "epochs": epochs, "lr": lr}
     category_results = [
@@ -153,12 +159,12 @@ def main():
 
     # save NN category learning results
     util.save_learning_results(results_fn, category_results)
-    """
 
+    """
     # debug loss
     train_dataloader = dataloaders[0]
     model = learner.Net0().to(device)
-    loss_fn = nn.functional.binary_cross_entropy
+    loss_fn = torch.nn.BCELoss()
     optimizer = torch.optim.SGD(model.parameters(), lr=lr)
 
     # Main training loop
@@ -182,7 +188,7 @@ def main():
     util.save_plot("loss.png", plot)
     print("LOSS DATAFRAME: \n-------------------------------")
     print(df)
-
+    """
 
 if __name__ == "__main__":
     device = "cuda" if torch.cuda.is_available() else "cpu"
