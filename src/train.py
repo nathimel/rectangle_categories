@@ -1,4 +1,6 @@
+import sys
 import torch
+import numpy as np
 from torch import nn
 from torch.utils.data import DataLoader, TensorDataset
 
@@ -44,38 +46,39 @@ def test(dataloader, model, loss_fn):
 ##############################################################################
 
 def main():
+    if len(sys.argv) != 2:
+        print("Usage: python3 src/train.py path_to_config_file")
+        raise TypeError(f"Expected {2} arguments but received {len(sys.argv)}.")
 
     # Load configs
-    configs = util.load_configs
+    config_fn = sys.argv[1]
+    configs = util.load_configs(config_fn)
     epochs = configs["num_epochs"]
     batch_size = configs["batch_size"]
     lr = float(configs["learning_rate"])
+    dataset_fn = configs["filepaths"]["dataset"]
 
     # Load data
-    raw_data = util.load_category_data()
-    X = raw_data["X"]
-    y = raw_data["y"]
-    tensor_X = torch.Tensor(X)
-    tensor_y = torch.Tensor(y)
-    training_data = TensorDataset(tensor_X, tensor_y)
-    train_dataloader = DataLoader(training_data, batch_size=batch_size)
+    raw_data = util.load_category_data(fn=dataset_fn)
+    train_dataloader = DataLoader(TensorDataset(torch.Tensor(raw_data["X"]), torch.Tensor(raw_data["y"])), batch_size=batch_size)
 
     for X, y in train_dataloader:
-        print(f"Shape of X: {X.shape}")
-        print(f"Shape of y: {y.shape} {y.dtype}")
+        # Broken into minibatches
+        print(f"Shape of X: {X.shape}") # `[batch_size, input_size]`
+        print(f"Shape of y: {y.shape} {y.dtype}") # `[batch_size]`
         break
     
-    # Initialize model and parameters
-    model = learner.Net0().to(device)
-    print(model)
-    loss_fn = nn.CrossEntropyLoss()
-    optimizer = torch.optim.SGD(model.parameters(), lr=lr)
+    # # Initialize model and parameters
+    # model = learner.Net0().to(device)
+    # print(model)
+    # loss_fn = nn.CrossEntropyLoss()
+    # optimizer = torch.optim.SGD(model.parameters(), lr=lr)
 
-    # Main training loop
-    for t in range(epochs):
-        print(f"Epoch {t+1}\n-------------------------------")
-        learner.train(train_dataloader, model, loss_fn, optimizer)
-    print("Done!")                
+    # # Main training loop
+    # for t in range(epochs):
+    #     print(f"Epoch {t+1}\n-------------------------------")
+    #     learner.train(train_dataloader, model, loss_fn, optimizer)
+    # print("Done!")                
 
 if __name__ == "__main__":
     device = "cuda" if torch.cuda.is_available() else "cpu"
