@@ -1,5 +1,5 @@
 # experiment params
-sample_size: 2 # number of NNs to train on each category
+sample_size: 1 # number of NNs to train on each category
 
 # files
 filepaths:
@@ -7,7 +7,7 @@ filepaths:
   learning_results: outputs/dev/learning_results.npz
 
 # network hyperparams
-num_epochs: 4
+num_epochs: 400
 batch_size: 8
 learning_rate: 1e-3
 
