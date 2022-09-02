@@ -7,7 +7,7 @@ class NeuralNetwork(nn.Module):
         super(NeuralNetwork, self).__init__()
         self.flatten = nn.Flatten()
         self.linear_relu_stack = nn.Sequential(
-            nn.Linear(28*28, 512),
+            nn.Linear(28 * 28, 512),
             nn.ReLU(),
             nn.Linear(512, 512),
             nn.ReLU(),
@@ -19,17 +19,18 @@ class NeuralNetwork(nn.Module):
         logits = self.linear_relu_stack(x)
         return logits
 
+
 # rectangle experiment net
 class Net0(nn.Module):
     def __init__(self) -> None:
         super(Net0, self).__init__()
         self.flatten = nn.Flatten()
         self.linear_relu_stack = nn.Sequential(
-            nn.Linear(4*4, 12), # input dim
+            nn.Linear(4 * 4, 12),  # input dim
             nn.ReLU(),
             nn.Linear(12, 12),
             nn.ReLU(),
-            nn.Linear(12, 2), # binary classification
+            nn.Linear(12, 2),  # binary classification
         )
 
     def forward(self, x):

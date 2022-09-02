@@ -1,6 +1,10 @@
+# experiment params
+sample_size: 2 # number of NNs to train on each category
+
 # files
 filepaths:
-  dataset: outputs/dev/dataset.npz
+  datasets: outputs/dev/datasets
+  learning_results: outputs/dev/learning_results.npz
 
 # network hyperparams
 num_epochs: 4

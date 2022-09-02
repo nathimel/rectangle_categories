@@ -10,11 +10,11 @@ fi
 
 CONFIG=$1
 
-echo "python3 generate_categories.py $1"
-python3 generate_categories.py $1
+echo "python3 src/generate_categories.py $1"
+python3 src/generate_category_data.py $1
 
-echo "python3 train.py $1"
-python3 train.py $1
+echo "python3 src/train.py $1"
+python3 src/train.py $1
 
-echo "python3 analyze.py $1"
-python3 analyze.py $1
+echo "python3 src/analyze.py $1"
+python3 src/analyze.py $1
