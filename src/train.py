@@ -33,7 +33,7 @@ def test(dataloader, model, loss_fn):
     test_loss, correct = 0, 0
     with torch.no_grad():
         for X, y in dataloader:
-            X, y = X.to(device), y.to(device)
+            X, y = X.to(device, dtype=torch.float), y.to(device, dtype=torch.int64)
             pred = model(X)
             test_loss += loss_fn(pred, y).item()
             correct += (pred.argmax(1) == y).type(torch.float).sum().item()
@@ -77,6 +77,7 @@ def main():
     for t in range(epochs):
         print(f"Epoch {t+1}\n-------------------------------")
         train(train_dataloader, model, loss_fn, optimizer)
+        test(train_dataloader, model, loss_fn)
     print("Done!")                
 
 if __name__ == "__main__":
