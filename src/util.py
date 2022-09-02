@@ -1,7 +1,7 @@
 import yaml
 import numpy as np
 from typing import Any
-
+from plotnine import ggplot
 
 def set_seed(seed: int) -> None:
     """Sets random seeds."""
@@ -67,3 +67,7 @@ def load_learning_results(fn: str) -> dict[str, np.ndarray]:
         npzfile = np.load(f, allow_pickle=True)
         data = {file: npzfile[file] for file in npzfile.files}
     return data
+
+def save_plot(fn: str, plot: ggplot, width=10, height=10, dpi=300) -> None:
+    """Save a plot with some default settings."""
+    plot.save(fn, width=10, height=10, dpi=300)

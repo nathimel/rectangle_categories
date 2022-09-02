@@ -20,7 +20,7 @@ def train(dataloader, model, loss_fn, optimizer) -> float:
 
         # Compute prediction error
         pred = model(X)
-        loss = loss_fn(pred, y)
+        loss = loss_fn(pred, y.unsqueeze(1).float()) # expand y to shape [batch_size, 1]
 
         # record loss
         running_loss += loss.item() * X.size(0)
@@ -47,7 +47,7 @@ def test(dataloader, model, loss_fn):
         for X, y in dataloader:
             X, y = X.to(device, dtype=torch.float), y.to(device, dtype=torch.int64)
             pred = model(X)
-            test_loss += loss_fn(pred, y).item()
+            test_loss += loss_fn(pred, y.unsqueeze(1).float()).item()
             correct += (pred.argmax(1) == y).type(torch.float).sum().item()
     test_loss /= num_batches
     correct /= size
@@ -93,9 +93,9 @@ def train_learners(
     for learner_num in range(num_learners):
 
         # Initialize model and parameters
-        model = learner.Net0().to(device)
+        model = learner.Net1().to(device)
         print(model)
-        loss_fn = nn.CrossEntropyLoss()
+        loss_fn = nn.functional.binary_cross_entropy_with_logits
         optimizer = torch.optim.SGD(model.parameters(), lr=lr)
 
         # Main training loop
