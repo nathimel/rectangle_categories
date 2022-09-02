@@ -64,3 +64,35 @@ class Net1(nn.Module):
         logit = self.linear_relu_stack(x)
         output = torch.sigmoid(logit)
         return output
+
+class ConvNet(nn.Module):
+    """Treat the grid on which categories are placed as an image. Then images are of size 4x4x1 (4 wide, 4 high, 1 'grayscale channel')"""
+    def __init__(self) -> None:
+        super(ConvNet, self).__init__()
+        # input shape: [batch_size, in_channels, height, width]
+        # output shape: [batch_size, out_channels, H_out, W_out]
+        # where H_out = floor(height + 2*padding - kernel_size) / stride + 1.
+
+        self.conv1 = nn.Conv2d(in_channels=1, out_channels=1, kernel_size=2)
+        # so here, H_out = (4 + 2*0 - 2) / 2 = 1
+        # and same for W_out.
+
+        # Pooling is also a filter, and uses the same equation. we have
+        # ((width + 2 * padding - filter_size ) / stride + 1
+        self.pool = nn.MaxPool2d(kernel_size=2)
+        self.conv2 = nn.Conv2d(in_channels=1, out_channels=1, kernel_size=2)
+        self.linear_relu_stack = nn.Sequential(
+            nn.Linear(1 * 2 * 2, 16),
+            nn.ReLU(),
+            nn.Linear(16, 16),
+            nn.ReLU(),            
+            nn.Linear(16, 1),
+        )
+    
+    def forward(self, x):
+        x = self.pool(nn.functional.relu(self.conv1(x)))
+        x = self.pool(nn.functional.relu(self.conv2(x)))
+        x = torch.flatten(x, 1) # flatten all dimensions except batch
+        x = self.linear_relu_stack(x)
+        x = torch.sigmoid(x)
+        return x

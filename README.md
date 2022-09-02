@@ -18,11 +18,11 @@ Reproduce the experiment by running `./run_full_experiment.sh`
 
 This calls the following scripts which can be run individually:
 
-`python3 build_categories.py path_to_config_file`
+`python3 src/generate_category_data.py path_to_config_file`
 
 `python3 build_dataset.py path_to_config_file`
 
-`python3 train_learners.py path_to_config_file`
+`python3 src/train.py path_to_config_file`
 
 `python3 analyze.py path_to_config_file`
 
