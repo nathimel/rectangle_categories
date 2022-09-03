@@ -57,16 +57,10 @@ def concept_to_data(concept: np.ndarray) -> dict[str, list[np.ndarray]]:
     negative_examples = concept_to_examples(1 - concept)
     negative_labels = [0.0] * len(negative_examples)
 
-    print("shape of positive example")
-    print(positive_examples[0].shape)
-
     data = {
         "X": np.array(positive_examples + negative_examples),  # (16, 4, 4)
         "y": np.array(positive_labels + negative_labels),  # (16,)
     }
-
-    print("shape of X")
-    print(data["X"].shape)
 
     return data
 
