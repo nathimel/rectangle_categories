@@ -13,8 +13,11 @@ CONFIG=$1
 echo "python3 src/generate_categories.py $1"
 python3 src/generate_category_data.py $1
 
-echo "python3 src/train.py $1"
-python3 src/train.py $1
+echo "python3 src/sample_train.py $1"
+python3 src/sample_train.py $1
+
+echo "python3 src/main_experiment.py $1"
+python3 src/main_experiment.py $1
 
 echo "python3 src/analyze.py $1"
 python3 src/analyze.py $1

@@ -8,8 +8,10 @@ filepaths:
   learning_results: outputs/dev/learning_results.npz
   plot: outputs/dev/plot.png
   sample_loss: outputs/dev/sample_loss.png
+  sample_accuracy: outputs/dev/sample_accuracy.png
 
 # network hyperparams
+learner: MLP0
 num_epochs: 100
 batch_size: 1
 learning_rate: 1e-2

@@ -4,10 +4,11 @@ import numpy as np
 from torch import nn
 from tqdm import tqdm
 from torch.utils.data import DataLoader, TensorDataset
-import pandas as pd
-import plotnine as pn
 import learner
 import util
+
+device = "cuda" if torch.cuda.is_available() else "cpu"
+print(f"Using {device} device")
 
 
 def train(
@@ -69,7 +70,7 @@ def test(
     model: nn.Module,
     loss_fn: nn.modules.loss._Loss,
     verbose: bool = False,
-) -> None:
+) -> float:
     """Evaluate the neural network learner on a category.
 
     Args:
@@ -80,6 +81,9 @@ def test(
         loss_fn: the loss function to evaluate on, e.g. BCELoss
 
         verbose: a bool representing whether to print intermediate information during training.
+
+    Returns:
+        accuracy: the fraction of category examples correct during evaluation
     """
 
     size = len(dataloader.dataset)
@@ -93,11 +97,12 @@ def test(
             test_loss += loss_fn(pred, y.unsqueeze(1)).item()
             correct += (torch.round(pred) == y).type(torch.float).sum().detach().numpy()
     test_loss /= num_batches
-    correct /= size
+    accuracy = correct / size
     if verbose:
         print(
-            f"Test Error: \n Accuracy: {(100*correct):>0.1f}%, Avg loss: {test_loss:>8f} \n"
+            f"Test Error: \n Accuracy: {(100*accuracy):>0.1f}%, Avg loss: {test_loss:>8f} \n"
         )
+    return accuracy
 
 
 def get_dataloader(fn: str, batch_size: int) -> DataLoader:
@@ -114,6 +119,7 @@ def get_dataloader(fn: str, batch_size: int) -> DataLoader:
 
 def train_learners(
     train_dataloader: DataLoader,
+    learner_class: nn.Module,
     num_learners: int = 1,
     epochs: int = 4,
     lr: float = 1e-3,
@@ -146,7 +152,7 @@ def train_learners(
     for learner_num in tqdm(range(num_learners)):
 
         # Initialize model and parameters
-        model = learner.CNN0().to(device)
+        model = learner.learners[learner_class]().to(device)
         if verbose:
             print(model)
         loss_fn = torch.nn.BCELoss()
@@ -171,24 +177,24 @@ def train_learners(
 
 
 ##############################################################################
-# Main driver code
+# Main experiment driver code
 ##############################################################################
 
 
 def main():
     if len(sys.argv) != 2:
-        print("Usage: python3 src/train.py path_to_config_file")
+        print("Usage: python3 src/main_experiment.py path_to_config_file")
         raise TypeError(f"Expected {2} arguments but received {len(sys.argv)}.")
 
     # Load configs
     config_fn = sys.argv[1]
     configs = util.load_configs(config_fn)
+    learner_class = configs["learner"]
     epochs = configs["num_epochs"]
     batch_size = configs["batch_size"]
     sample_size = configs["sample_size"]
     lr = float(configs["learning_rate"])
     dataset_folder = configs["filepaths"]["datasets"]
-    sample_loss_fn = configs["filepaths"]["sample_loss"]
     results_fn = configs["filepaths"]["learning_results"]
     verbose = configs["verbose"]
 
@@ -200,73 +206,20 @@ def main():
         for i in range(1, 13)
     ]
 
-    # Record the loss evolution for one learner on each category for inspection
-    print("Training one learner on all categories for sample loss trajectories.")
-
-    model = learner.CNN0().to(device)
-    loss_fn = torch.nn.BCELoss()
-    optimizer = torch.optim.SGD(model.parameters(), lr=lr)
-    category_losses = []
-
-    for train_dataloader in dataloaders:
-        losses = []
-        for t in tqdm(range(epochs)):
-            if verbose:
-                print(f"Epoch {t+1}\n-------------------------------")
-            losses.append(train(train_dataloader, model, loss_fn, optimizer, verbose))
-            test(train_dataloader, model, loss_fn, verbose)
-        if verbose:
-            print("Done!")
-        category_losses.append(losses)
-
-    # create dataframe and plot to visualize losses
-    points = [
-        (
-            epoch,
-            loss,
-            str(category_name + 1),
-        )
-        for category_name in range(len(category_losses))
-        for epoch, loss in enumerate(category_losses[category_name])
-    ]
-    df = pd.DataFrame(
-        points,
-        columns=[
-            "Epoch",
-            "Loss",
-            "Concept",
-        ],
-    )
-    df_categorical = df.assign(Concept=pd.Categorical(df['Concept'], categories=[str(i+1) for i in range(len(category_losses))])) # preserve order in legend
-
-    print(df_categorical.Concept)
-
-    plot = (
-        pn.ggplot(
-            data=df_categorical, mapping=pn.aes(x="Epoch", y="Loss")
-        )
-        + pn.geom_line(pn.aes(color="Concept"))
-        + pn.xlab("Epoch")
-        + pn.ylab("Loss")
-    )
-    util.save_plot(sample_loss_fn, plot)
-    if verbose:
-        print("LOSS DATAFRAME: \n-------------------------------")
-    if verbose:
-        print(df)
-
-    ############################################################################
-    # Main learning experiment
-    ############################################################################
-
     # train each learner and collect their avg losses
-    kwargs = {"num_learners": sample_size, "epochs": epochs, "lr": lr, "verbose": verbose}
+    kwargs = {
+        "num_learners": sample_size,
+        "epochs": epochs,
+        "lr": lr,
+        "verbose": verbose,
+    }
     category_results = [
         train_learners(
             loader,
+            learner_class,
             **kwargs,
-            category_name=str(i+1),
-            )
+            category_name=str(i + 1),
+        )
         for i, loader in enumerate(dataloaders)
     ]
 
@@ -275,6 +228,4 @@ def main():
 
 
 if __name__ == "__main__":
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    print(f"Using {device} device")
     main()

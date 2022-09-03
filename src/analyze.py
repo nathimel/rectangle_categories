@@ -54,7 +54,7 @@ def main():
             data=df,
         )
         + pn.geom_point(size=4, shape="o", fill="white", data=df_mean)
-        + pn.geom_smooth(size=1, data=df, alpha=0.2, color="red", se=True)
+        + pn.geom_smooth(size=1, data=df, alpha=0.2, color="red", method='lm')
         + pn.xlab("MDL complexity")
         + pn.ylab("Learning effort (avg loss)")
         + pn.scale_color_cmap("cividis")
