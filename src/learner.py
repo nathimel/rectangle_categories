@@ -72,20 +72,43 @@ class ConvNet(nn.Module):
         # input shape: [batch_size, in_channels, height, width]
         # output shape: [batch_size, out_channels, H_out, W_out]
         # where H_out = floor(height + 2*padding - kernel_size) / stride + 1.
+        # our input is (batch_size, 1, 4, 4)
 
-        self.conv1 = nn.Conv2d(in_channels=1, out_channels=1, kernel_size=2)
-        # so here, H_out = (4 + 2*0 - 2) / 2 = 1
-        # and same for W_out.
+        self.conv1 = nn.Conv2d(
+            in_channels=1, 
+            out_channels=1, 
+            kernel_size=2,
+            padding=2, 
+            stride=1,
+            )
+        # so here, H_out = W_out = (4 + 2*2 - 2) / 2 = 6/3 = 2
+        # yielding shape (batch_size, 1, 2, 2)
 
         # Pooling is also a filter, and uses the same equation. we have
-        # ((width + 2 * padding - filter_size ) / stride + 1
-        self.pool = nn.MaxPool2d(kernel_size=2)
-        self.conv2 = nn.Conv2d(in_channels=1, out_channels=1, kernel_size=2)
+        # ((width + 2 * padding - filter_size) / stride + 1
+        self.pool = nn.MaxPool2d(
+            kernel_size=2, # pool of square window size=2
+            padding=2,
+            stride=1,
+            )
+        # here H_out = W_out = (2 + 2*2 - 2) / 2 = 2
+        # yielding shape (batch_size, 1, 2, 2)
+
+        self.conv2 = nn.Conv2d(
+            in_channels=1, 
+            out_channels=1, 
+            kernel_size=2,
+            padding=2, 
+            stride=1,
+        )
+        # and here H_out = W_out = (2 + 2*2 - 2) / 2 = 2
+        # yielding shape (batch_size, 1, 2, 2)
+
         self.linear_relu_stack = nn.Sequential(
-            nn.Linear(1 * 2 * 2, 16),
+            nn.Linear(1 * 2 * 2, 16), # input flattened
             nn.ReLU(),
             nn.Linear(16, 16),
-            nn.ReLU(),            
+            nn.ReLU(),
             nn.Linear(16, 1),
         )
     
