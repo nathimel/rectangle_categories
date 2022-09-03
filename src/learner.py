@@ -73,39 +73,43 @@ class CNN0(nn.Module):
         # output shape: [batch_size, out_channels, H_out, W_out]
         # where H_out = floor(height + 2*padding - kernel_size) / stride + 1.
         # our input is (batch_size, 1, 4, 4)
+        # actual is [1, 4, 4]
 
         self.conv1 = nn.Conv2d(
             in_channels=1, 
             out_channels=1, 
             kernel_size=2,
-            padding=2, 
+            padding=1,
             stride=1,
             )
-        # so here, H_out = W_out = (4 + 2*2 - 2) / 2 = 6/3 = 2
+        # so here, H_out = W_out = (4 + 2*1 - 2) / 2 = 2
         # yielding shape (batch_size, 1, 2, 2)
+        # actual is [1, 5, 5]
 
         # Pooling is also a filter, and uses the same equation. we have
         # ((width + 2 * padding - filter_size) / stride + 1
         self.pool = nn.MaxPool2d(
             kernel_size=2, # pool of square window size=2
-            padding=2,
+            padding=1,
             stride=1,
             )
-        # here H_out = W_out = (2 + 2*2 - 2) / 2 = 2
-        # yielding shape (batch_size, 1, 2, 2)
+        # here H_out = W_out = (2 + 2*1 - 2) / 2 = 1
+        # yielding shape (batch_size, 1, 1, 1)
+        # actual is [1, 6, 6]
 
         self.conv2 = nn.Conv2d(
             in_channels=1, 
             out_channels=1, 
             kernel_size=2,
-            padding=2, 
+            padding=1, 
             stride=1,
         )
-        # and here H_out = W_out = (2 + 2*2 - 2) / 2 = 2
-        # yielding shape (batch_size, 1, 2, 2)
+        # and here H_out = W_out = (1 + 2*1 - 2) / 2 = 0
+        # yielding shape (batch_size, 1, 0, 0)
+        # actual is [1, 7, 7]        
 
         self.linear_relu_stack = nn.Sequential(
-            nn.Linear(1 * 2 * 2, 16), # input flattened
+            nn.Linear(1 * 8 * 8, 16), # input flattened
             nn.ReLU(),
             nn.Linear(16, 16),
             nn.ReLU(),
@@ -113,9 +117,24 @@ class CNN0(nn.Module):
         )
     
     def forward(self, x):
-        x = self.pool(nn.functional.relu(self.conv1(x)))
-        x = self.pool(nn.functional.relu(self.conv2(x)))
+        # x = self.pool(nn.functional.relu(self.conv1(x)))
+        # x = self.pool(nn.functional.relu(self.conv2(x)))
+        # print("INPUT SHAPE: ", x.size())
+        x = self.conv1(x)
+        # print("CONV1 OUTPUT SHAPE: ", x.size())
+        x = nn.functional.relu(x)
+        x = self.pool(x)
+        # print("POOL OUTPUT SHAPE: ", x.size())
+
+        x = self.conv2(x)
+        # print("CONV2 OUTPUT SHAPE: ", x.size())
+
+        x = nn.functional.relu(x)
+        x = self.pool(x)
+        # print("POOL OUTPUT SHAPE: ", x.size())
+
         x = torch.flatten(x, 1) # flatten all dimensions except batch
+        # print("FLATTEN OUTPUT SHAPE: ", x.size())
         x = self.linear_relu_stack(x)
         x = torch.sigmoid(x)
         return x
