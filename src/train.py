@@ -238,6 +238,9 @@ def main():
         ],
     )
     df_categorical = df.assign(Concept=pd.Categorical(df['Concept'], categories=[str(i+1) for i in range(len(category_losses))])) # preserve order in legend
+
+    print(df_categorical.Concept)
+
     plot = (
         pn.ggplot(
             data=df_categorical, mapping=pn.aes(x="Epoch", y="Loss")

@@ -28,22 +28,22 @@ def main():
     # print("LEARNING DATA: ", learning_data)
 
     # NB: turn learning effort into ease by reporting 1/loss    
-    category_learnabilities = [
-        1 / losses for losses in learning_data.values()
+    category_losses = [
+        losses for losses in learning_data.values()
     ]  # shape `(num_categories, num_learners)`
     # print("CATEGORY LOSSES: ", category_losses)
-    mean_category_learnabilities = np.mean(category_learnabilities, axis=1)
+    mean_category_losses = np.mean(category_losses, axis=1)
 
     # create plot points of (mdl, loss) with number of repeat (mdl, ) points equal to number of learners
     points = [
-        (categories[category_name]["codelength"], 1 / loss)
+        (categories[category_name]["codelength"], loss)
         for category_name in categories
         for loss in learning_data[category_name]
     ]
 
     # analyze and visualize data
     df = pd.DataFrame(points, columns=["mdl", "effort"])
-    df_mean = pd.DataFrame({"mdl": mdl_complexities, "effort": mean_category_learnabilities})
+    df_mean = pd.DataFrame({"mdl": mdl_complexities, "effort": mean_category_losses})
 
     # Plot MDL complexity vs learning effort
     plot = (
@@ -56,13 +56,13 @@ def main():
         + pn.geom_point(size=4, shape="o", fill="white", data=df_mean)
         + pn.geom_smooth(size=1, data=df, alpha=0.2, color="red", se=True)
         + pn.xlab("MDL complexity")
-        + pn.ylab("Ease of learning (1/loss)")
+        + pn.ylab("Learning effort (avg loss)")
         + pn.scale_color_cmap("cividis")
     )
     util.save_plot(plot_fn, plot)
 
     # Report spearman rank correlation for MDL complexity vs learning effort
-    result = stats.spearmanr(mdl_complexities, mean_category_learnabilities)
+    result = stats.spearmanr(mdl_complexities, mean_category_losses)
     print("SPEARMAN RHO: ", result.correlation)
 
 
