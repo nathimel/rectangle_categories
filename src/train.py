@@ -146,7 +146,7 @@ def train_learners(
     for learner_num in tqdm(range(num_learners)):
 
         # Initialize model and parameters
-        model = learner.Net0().to(device)
+        model = learner.CNN0().to(device)
         if verbose:
             print(model)
         loss_fn = torch.nn.BCELoss()
@@ -203,7 +203,7 @@ def main():
     # Record the loss evolution for one learner on each category for inspection
     print("Training one learner on all categories for sample loss trajectories.")
 
-    model = learner.Net0().to(device)
+    model = learner.CNN0().to(device)
     loss_fn = torch.nn.BCELoss()
     optimizer = torch.optim.SGD(model.parameters(), lr=lr)
     category_losses = []

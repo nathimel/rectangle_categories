@@ -39,15 +39,15 @@ def concept_to_data(concept: np.ndarray) -> dict[str, list[np.ndarray]]:
         data: a dict of the form {'X': np.ndarray of shape `(num_examples, num_features)`, 'y': np.ndarray of shape `(num_examples)`}
     """
 
-    def get_one_hot(index) -> np.ndarray:
-        """Utility function to create a single one-hot vector representing a stimulus (in)consistent with a category."""
-        one_hot = np.zeros_like(concept.flatten())
-        one_hot[index] = 1
+    def get_one_hot(indices) -> np.ndarray:
+        """Utility function to create a single one-hot (2D) ndarray representing a stimulus (in)consistent with a category."""
+        one_hot = np.zeros_like(concept)
+        one_hot[tuple(indices)] = 1
         return one_hot
 
     def concept_to_examples(concept: np.ndarray) -> list:
-        """Utility function to create a list of examples from a concept (binary 2D array)."""
-        return [get_one_hot(idx) for idx in np.argwhere(concept.flatten())]
+        """Utility function to create a list of (binary 2D array) examples from a concept (binary 2D array)."""
+        return [get_one_hot(indices) for indices in np.argwhere(concept)]
 
     # generate positive examples
     positive_examples = concept_to_examples(concept)
@@ -57,10 +57,17 @@ def concept_to_data(concept: np.ndarray) -> dict[str, list[np.ndarray]]:
     negative_examples = concept_to_examples(1 - concept)
     negative_labels = [0.0] * len(negative_examples)
 
+    print("shape of positive example")
+    print(positive_examples[0].shape)
+
     data = {
-        "X": np.array(positive_examples + negative_examples),  # shape (16,16)
-        "y": np.array(positive_labels + negative_labels),  # shape (16,)
+        "X": np.array(positive_examples + negative_examples),  # (16, 4, 4)
+        "y": np.array(positive_labels + negative_labels),  # (16,)
     }
+
+    print("shape of X")
+    print(data["X"].shape)
+
     return data
 
 

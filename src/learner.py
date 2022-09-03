@@ -65,10 +65,10 @@ class Net1(nn.Module):
         output = torch.sigmoid(logit)
         return output
 
-class ConvNet(nn.Module):
+class CNN0(nn.Module):
     """Treat the grid on which categories are placed as an image. Then images are of size 4x4x1 (4 wide, 4 high, 1 'grayscale channel')"""
     def __init__(self) -> None:
-        super(ConvNet, self).__init__()
+        super(CNN0, self).__init__()
         # input shape: [batch_size, in_channels, height, width]
         # output shape: [batch_size, out_channels, H_out, W_out]
         # where H_out = floor(height + 2*padding - kernel_size) / stride + 1.
