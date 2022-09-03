@@ -16,6 +16,7 @@ def main():
     config_fn = sys.argv[1]
     configs = util.load_configs(config_fn)
     learning_results_fn = configs["filepaths"]["learning_results"]
+    analysis_fn = configs["filepaths"]["analysis"]
     plot_fn = configs["filepaths"]["plot"]
 
     # load Fass and Feldman data
@@ -63,7 +64,7 @@ def main():
 
     # Report spearman rank correlation for MDL complexity vs learning effort
     result = stats.spearmanr(mdl_complexities, mean_category_losses)
-    print("SPEARMAN RHO: ", result.correlation)
+    util.save_analysis(analysis_fn, result)
 
 
 if __name__ == "__main__":

@@ -74,7 +74,7 @@ def main():
     configs = util.load_configs(config_fn)
     dataset_folder = configs["filepaths"]["datasets"]
 
-    to_fn = lambda name: f"{dataset_folder}/{name}.npz"
+    to_fn = lambda name: f"{dataset_folder}{name}.npz" # '/' already included
 
     for name, category_data in categories.items():
         data = concept_to_data(category_data["concept"])

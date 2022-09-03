@@ -1,0 +1,18 @@
+# experiment params
+sample_size: 14 # number of NNs to train on each category
+verbose: False # whether to print intermediate output
+
+# files
+filepaths:
+  datasets: outputs/mlp0/datasets
+  learning_results: outputs/mlp0/learning_results.npz
+  plot: outputs/mlp0/plot.png
+  sample_loss: outputs/mlp0/sample_loss.png
+  sample_accuracy: outputs/mlp0/sample_accuracy.png
+  analysis: outputs/mlp0/analysis.csv  
+
+# network hyperparams
+learner: MLP0
+num_epochs: 100
+batch_size: 1
+learning_rate: 1e-2

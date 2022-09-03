@@ -29,7 +29,7 @@ def main():
     # For each category, construct a dataset (loader), and train a sample of neural learners on it.
     dataloaders = [
         main_experiment.get_dataloader(
-            fn=f"{dataset_folder}/{i}.npz", batch_size=batch_size  # clean this up
+            fn=f"{dataset_folder}{i}.npz", batch_size=batch_size  # clean this up
         )
         for i in range(1, 13)
     ]

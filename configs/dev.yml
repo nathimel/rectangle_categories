@@ -4,16 +4,15 @@ verbose: False # whether to print intermediate output
 
 # files
 filepaths:
-  datasets: outputs/dev/datasets
+  datasets: outputs/dev/datasets/
   learning_results: outputs/dev/learning_results.npz
   plot: outputs/dev/plot.png
   sample_loss: outputs/dev/sample_loss.png
   sample_accuracy: outputs/dev/sample_accuracy.png
+  analysis: outputs/dev/analysis.csv
 
 # network hyperparams
-learner: MLP0
-num_epochs: 100
+learner: CNN0
+num_epochs: 10
 batch_size: 1
 learning_rate: 1e-2
-
-# network architecture

@@ -10,6 +10,9 @@ fi
 
 CONFIG=$1
 
+echo "python3 src/create_folders.py $1"
+python3 src/create_folders.py $1
+
 echo "python3 src/generate_categories.py $1"
 python3 src/generate_category_data.py $1
 
