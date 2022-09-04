@@ -18,6 +18,7 @@ def main():
     config_fn = sys.argv[1]
     configs = util.load_configs(config_fn)
     learner_class = configs["learner"]
+    seed = configs["random_seed"]
     epochs = configs["num_epochs"]
     batch_size = configs["batch_size"]
     lr = float(configs["learning_rate"])
@@ -25,6 +26,8 @@ def main():
     sample_loss_fn = configs["filepaths"]["sample_loss"]
     sample_acc_fn = configs["filepaths"]["sample_accuracy"]
     verbose = configs["verbose"]
+
+    util.set_seed(seed)
 
     # For each category, construct a dataset (loader), and train a sample of neural learners on it.
     dataloaders = [

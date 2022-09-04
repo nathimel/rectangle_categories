@@ -10,4 +10,6 @@ dependencies:
   - pandas
   - numpy
   - tqdm
+  - opencv
+  - matplotlib
 prefix: /Users/nathanielimel/miniforge3/envs/rectangles

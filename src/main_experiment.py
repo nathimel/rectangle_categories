@@ -114,7 +114,7 @@ def get_dataloader(fn: str, batch_size: int) -> DataLoader:
     tensor_X = torch.Tensor(X)
     tensor_y = torch.Tensor(y)
     training_data = TensorDataset(tensor_X, tensor_y)
-    train_dataloader = DataLoader(training_data, batch_size=batch_size)
+    train_dataloader = DataLoader(training_data, batch_size=batch_size, shuffle=True)
     return train_dataloader
 
 
@@ -191,6 +191,7 @@ def main():
     config_fn = sys.argv[1]
     configs = util.load_configs(config_fn)
     learner_class = configs["learner"]
+    seed = configs["random_seed"]
     epochs = configs["num_epochs"]
     batch_size = configs["batch_size"]
     sample_size = configs["sample_size"]
@@ -199,10 +200,13 @@ def main():
     results_fn = configs["filepaths"]["learning_results"]
     verbose = configs["verbose"]
 
+    util.set_seed(seed)
+
     # For each category, construct a dataset (loader), and train a sample of neural learners on it.
     dataloaders = [
         get_dataloader(
-            fn=f"{dataset_folder}{i}.npz", batch_size=batch_size  # clean this up
+            fn=f"{dataset_folder}{i}.npz", 
+            batch_size=batch_size,  # clean this up
         )
         for i in range(1, 13)
     ]
