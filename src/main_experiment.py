@@ -37,16 +37,11 @@ def train(
     size = len(dataloader.dataset)
     model.train()
     for batch, (X, y) in enumerate(dataloader):
-        X, y = X.to(device, dtype=torch.float), y.to(device, dtype=torch.float)
+        X = X.to(device, dtype=torch.float)
+        y = y.to(device, dtype=torch.float)
 
         # Compute prediction error
         pred = model(X)
-
-        if verbose:
-            print("TARGET: ", y.unsqueeze(1))
-        if verbose:
-            print("PREDICTION: ", pred)
-
         loss = loss_fn(pred, y.unsqueeze(1))  # expand y to shape [batch_size, 1]
 
         # record loss
@@ -57,7 +52,8 @@ def train(
         loss.backward()
         optimizer.step()
 
-        loss, current = loss.item(), batch * len(X)
+        loss = loss.item()
+        current = batch * len(X)
         if verbose:
             print(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
 
@@ -72,7 +68,7 @@ def test(
     loss_fn: nn.modules.loss._Loss,
     verbose: bool = False,
 ) -> float:
-    """Evaluate the neural network learner on a category.
+    """Evaluate the neural network learner on a category (one epoch).
 
     Args:
         dataloader: a pytorch DataLoader object containing the dataset for one category.
@@ -90,13 +86,19 @@ def test(
     size = len(dataloader.dataset)
     num_batches = len(dataloader)
     model.eval()
-    test_loss, correct = 0, 0
+    test_loss = 0
+    correct = 0
     with torch.no_grad():
         for X, y in dataloader:
-            X, y = X.to(device, dtype=torch.float), y.to(device, dtype=torch.float)
-            pred = model(X)
+            X = X.to(device, dtype=torch.float) # [batch_size, width, height]
+            y = y.to(device, dtype=torch.float) # [batch_size]
+
+            pred = model(X) # [batch_size, 1] we must unsqueeze label shape
+
             test_loss += loss_fn(pred, y.unsqueeze(1)).item()
-            correct += (torch.round(pred) == y).type(torch.float).sum().detach().numpy()
+            correct_instance = (torch.round(pred) == y.unsqueeze(1)).type(torch.float).sum().item()
+            correct += correct_instance
+
     test_loss /= num_batches
     accuracy = correct / size
     if verbose:

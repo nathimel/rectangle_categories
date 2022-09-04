@@ -111,6 +111,10 @@ def main():
 
     if data_size == "large":
         experiment_categories = expand_categories(categories)
+    elif data_size == "small":
+        experiment_categories = categories
+    else:
+        raise ValueError(f"The config parameter 'data_size' must be 'large' or 'small'. Received {data_size}.")
 
     for name, category_data in experiment_categories.items():
         data = concept_to_data(category_data["concept"])

@@ -250,13 +250,14 @@ class CNN2(nn.Module):
         # reshape 2d input to an input volume for convolution
         n, w, h = x.size()
         x = x.reshape(n, 1, w, h)
-        
+
         x = self.conv1(x)
         x = self.conv2(x)
         # flatten the output of conv2 to (batch_size, 32 * 7 * 7)
         x = self.flatten(x)
         x = self.out(x)
         x = torch.sigmoid(x)
+        # remove color channel to return output shape (batch_size)
         return x
 
 
