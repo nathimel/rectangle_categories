@@ -12,18 +12,20 @@ Steps of the experiment
 4. Train each learner to learn each category, and report its learning effort (as e.g., average loss over epochs) as a measure of cognitive complexity.
 5. Compare (e.g., linear regression) the learners' cognitive complexity data to the MDL complexity specified by Fass and Feldman (2002).
 
-## Structure of the codebase
+## Running
 
 Reproduce the experiment by running `./run_full_experiment.sh`
 
 This calls the following scripts which can be run individually:
 
+`python3 src/create_folders.py path_to_config_file`
+
 `python3 src/generate_category_data.py path_to_config_file`
 
-`python3 build_dataset.py path_to_config_file`
+`python3 src/sample_train.py path_to_config_file`
 
-`python3 src/train.py path_to_config_file`
+`python3 src/main_experiment.py path_to_config_file`
 
-`python3 analyze.py path_to_config_file`
+`python3 src/analyze.py path_to_config_file`
 
 A YAML configuration file should be created in [/configs](/configs) specifying parameters of the experiment (such as NN architecture, etc).
