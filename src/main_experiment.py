@@ -8,6 +8,7 @@ import learner
 import util
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
+# device = torch.device("mps") # need mac os 12.3
 print(f"Using {device} device")
 
 

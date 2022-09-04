@@ -52,6 +52,27 @@ class MLP1(nn.Module):
         output = torch.sigmoid(logit)
         return output
 
+class MLPLarge0(nn.Module):
+    def __init__(self) -> None:
+        super(MLPLarge0, self).__init__()
+        self.flatten = nn.Flatten()
+        self.linear_relu_stack = nn.Sequential(
+            nn.Linear(28 * 28, 100),  # input dim
+            nn.ReLU(),
+            nn.Linear(100, 100), # hidden layer 1
+            nn.ReLU(),
+            nn.Linear(100, 100), # hidden layer 2
+            nn.ReLU(),            
+            nn.Linear(100, 1),  # binary classify into 0,1
+        )
+
+    def forward(self, x):
+        x = self.flatten(x)
+        logit = self.linear_relu_stack(x)
+        output = torch.sigmoid(logit)
+        return output    
+
+
 ############################################################################
 # Convolutional networks
 # 
@@ -102,6 +123,8 @@ class CNN0(nn.Module):
         # yielding shape (batch_size, 1, 2, 2)
 
         # flatten input
+        self.flatten = nn.Flatten()
+
         self.linear_relu_stack = nn.Sequential(
             nn.Linear(1 * 2 * 2, 16),
             nn.ReLU(),
@@ -127,7 +150,7 @@ class CNN0(nn.Module):
         x = self.pool(x)
         # print("POOL OUTPUT SHAPE: ", x.size())
 
-        x = torch.flatten(x, 1) # flatten all dimensions except batch
+        x = self.flatten(x) # flatten all dimensions except batch
         # print("FLATTEN OUTPUT SHAPE: ", x.size())
         x = self.linear_relu_stack(x)
         x = torch.sigmoid(x)
@@ -163,6 +186,8 @@ class CNN1(nn.Module):
         # yielding shape (batch_size, 1, 4, 4)
 
         # flatten input
+        self.flatten = nn.Flatten()
+
         self.linear_relu_stack = nn.Sequential(
             nn.Linear(1 * 6 * 6, 16),
             nn.ReLU(),
@@ -188,11 +213,55 @@ class CNN1(nn.Module):
         # x = self.pool(x)
         # print("POOL OUTPUT SHAPE: ", x.size())
 
-        x = torch.flatten(x, 1) # flatten all dimensions except batch
+        x = self.flatten(x) # flatten all dimensions except batch
         # print("FLATTEN OUTPUT SHAPE: ", x.size())
         x = self.linear_relu_stack(x)
         x = torch.sigmoid(x)
         return x
+
+class CNN2(nn.Module):
+    """Copied from https://medium.com/@nutanbhogendrasharma/pytorch-convolutional-neural-network-with-mnist-dataset-4e8a4265e118
+    """
+    def __init__(self):
+        super(CNN2, self).__init__()
+        self.conv1 = nn.Sequential(         
+            nn.Conv2d(
+                in_channels=1,              
+                out_channels=16,            
+                kernel_size=5,              
+                stride=1,                   
+                padding=2,                  
+            ),                              
+            nn.ReLU(),                      
+            nn.MaxPool2d(kernel_size=2),    
+        )
+        self.conv2 = nn.Sequential(         
+            nn.Conv2d(16, 32, 5, 1, 2),     
+            nn.ReLU(),                      
+            nn.MaxPool2d(2),                
+        )
+
+        # flatten input
+        self.flatten = nn.Flatten()
+
+        # fully connected layer, output binary classification
+        self.out = nn.Linear(32 * 7 * 7, 1)
+    def forward(self, x):
+        # print("SHAPE OF NET INPUT: ")
+        # print(x.size())
+        # reshape 2d input to an input volume for convolution
+        n, w, h = x.size()
+        x = x.reshape(n, 1, w, h)
+        # print("SHAPE AFTER RESHAPE: ")
+        # print(x.size())
+        x = self.conv1(x)
+        x = self.conv2(x)
+        # flatten the output of conv2 to (batch_size, 32 * 7 * 7)
+        x = self.flatten(x)
+        x = self.out(x)
+        x = torch.sigmoid(x)
+        return x
+
 
 ############################################################################
 # End network classes
@@ -202,6 +271,8 @@ class CNN1(nn.Module):
 learners = {
     "MLP0": MLP0,
     "MLP1": MLP1,
+    "MLPLarge0": MLPLarge0,
     "CNN0": CNN0,
     "CNN1": CNN1,
+    "CNN2": CNN2,
 }        

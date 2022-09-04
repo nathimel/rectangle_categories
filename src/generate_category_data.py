@@ -1,7 +1,7 @@
+import copy 
 import sys
 import util
 from typing import Any
-
 import numpy as np
 from data.categories import categories
 
@@ -65,6 +65,38 @@ def concept_to_data(concept: np.ndarray) -> dict[str, list[np.ndarray]]:
     return data
 
 
+def expand_concept(concept: np.ndarray) -> np.ndarray:
+  """Helper function to expand (square stretch) a category of size 4x4 to 28x28."""
+  concept_large = np.zeros((28, 28))  
+  for i in range(len(concept_large)):
+    for j in range(len(concept_large[i])):
+      i_ = int(np.floor(i / 7))
+      j_ = int(np.floor(j / 7))
+      if concept[i_, j_]:
+        concept_large[i,j] = 1.0
+  return concept_large
+
+
+def expand_categories(categories: dict[str, dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    """Convert list of category concepts from size 4x4 to 28x28.
+
+    Args:
+        categories: original dict of categories including concepts and hypotheses of size 4x4.
+
+    Returns:
+        categories_large: dict of categories including concepts of size 28x28 (and no other data).
+    """
+    categories_large = {}
+    for category in categories:
+        categories_large[category] = copy.deepcopy(categories[category])
+
+        concept = categories[category]['concept']
+        concept_large = expand_concept(concept)
+
+        categories_large[category]['concept'] = concept_large
+
+    return categories_large
+
 def main():
     if len(sys.argv) != 2:
         print("Usage: python3 src/generate_categories.py path_to_config_file")
@@ -72,11 +104,15 @@ def main():
 
     config_fn = sys.argv[1]
     configs = util.load_configs(config_fn)
+    data_size = configs["data_size"]
     dataset_folder = configs["filepaths"]["datasets"]
 
     to_fn = lambda name: f"{dataset_folder}{name}.npz" # '/' already included
 
-    for name, category_data in categories.items():
+    if data_size == "large":
+        experiment_categories = expand_categories(categories)
+
+    for name, category_data in experiment_categories.items():
         data = concept_to_data(category_data["concept"])
         util.save_category_data(fn=to_fn(name), data=data)
 
