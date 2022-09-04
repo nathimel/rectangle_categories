@@ -1,6 +1,6 @@
 #!/bin/sh
-source ~/miniforge3/etc/profile.d/conda.sh # Local
-# source ~/anaconda3/etc/profile.d/conda.sh # Patas
+# source ~/miniforge3/etc/profile.d/conda.sh # Local
+source ~/anaconda3/etc/profile.d/conda.sh # Patas
 conda activate rectangles
 
 # dev
