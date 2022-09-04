@@ -1,6 +1,6 @@
 # experiment params
 data_size: large # 'large' or 'small'
-sample_size: 14 # number of NNs to train on each category
+sample_size: 1 # number of NNs to train on each category
 verbose: False # whether to print intermediate output
 
 # files
@@ -14,6 +14,6 @@ filepaths:
 
 # network hyperparams
 learner: CNN2
-num_epochs: 10
-batch_size: 8
+num_epochs: 50
+batch_size: 8 # each category dataset has length (small: 16) or (large: 784)
 learning_rate: 1e-2

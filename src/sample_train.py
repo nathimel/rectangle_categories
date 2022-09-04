@@ -97,7 +97,6 @@ def main():
     acc_plot = (
         pn.ggplot(data=df_categorical, mapping=pn.aes(x="Epoch", y="Accuracy"))
         + pn.geom_line(pn.aes(color="Concept"))
-        + pn.ylim(0.7, 1.0)
         + pn.xlab("Epoch")
         + pn.ylab("Accuracy")
     )

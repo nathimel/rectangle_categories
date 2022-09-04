@@ -77,7 +77,7 @@ class MLPLarge0(nn.Module):
 # Convolutional networks
 # 
 # We treat the grid on which categories are placed as an image. 
-# Then 'images' are of size 4x4x1 (4 wide, 4 high, 1 'grayscale channel')
+# Note that pytorch convolution-based layers demands we reshape our input from [batch, width, height] into Tensors of shape [batch, channels, width, height]
 ############################################################################
 
 class CNN0(nn.Module):
@@ -247,13 +247,10 @@ class CNN2(nn.Module):
         # fully connected layer, output binary classification
         self.out = nn.Linear(32 * 7 * 7, 1)
     def forward(self, x):
-        # print("SHAPE OF NET INPUT: ")
-        # print(x.size())
         # reshape 2d input to an input volume for convolution
         n, w, h = x.size()
         x = x.reshape(n, 1, w, h)
-        # print("SHAPE AFTER RESHAPE: ")
-        # print(x.size())
+        
         x = self.conv1(x)
         x = self.conv2(x)
         # flatten the output of conv2 to (batch_size, 32 * 7 * 7)
