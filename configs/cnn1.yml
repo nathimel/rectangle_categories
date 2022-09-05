@@ -1,18 +1,20 @@
 # experiment params
+random_seed: 42
+data_size: large # 'large' or 'small'
 sample_size: 14 # number of NNs to train on each category
 verbose: False # whether to print intermediate output
 
 # files
 filepaths:
-  datasets: outputs/cnn1/datasets
+  datasets: outputs/cnn1/datasets/
   learning_results: outputs/cnn1/learning_results.npz
   plot: outputs/cnn1/plot.png
   sample_loss: outputs/cnn1/sample_loss.png
   sample_accuracy: outputs/cnn1/sample_accuracy.png
-  analysis: outputs/cnn1/analysis.csv    
+  analysis: outputs/cnn1/analysis.csv
 
 # network hyperparams
 learner: CNN1
-num_epochs: 100
-batch_size: 1
+num_epochs: 50
+batch_size: 8 # each category dataset has length (small: 16) or (large: 784)
 learning_rate: 1e-2

@@ -6,15 +6,15 @@ verbose: False # whether to print intermediate output
 
 # files
 filepaths:
-  datasets: outputs/cnn0/datasets/
-  learning_results: outputs/cnn0/learning_results.npz
-  plot: outputs/cnn0/plot.png
-  sample_loss: outputs/cnn0/sample_loss.png
-  sample_accuracy: outputs/cnn0/sample_accuracy.png
-  analysis: outputs/cnn0/analysis.csv
+  datasets: outputs/mlp2/datasets/
+  learning_results: outputs/mlp2/learning_results.npz
+  plot: outputs/mlp2/plot.png
+  sample_loss: outputs/mlp2/sample_loss.png
+  sample_accuracy: outputs/mlp2/sample_accuracy.png
+  analysis: outputs/mlp2/analysis.csv
 
 # network hyperparams
-learner: CNN0
+learner: MLPLarge0
 num_epochs: 50
 batch_size: 8 # each category dataset has length (small: 16) or (large: 784)
 learning_rate: 1e-2
