@@ -59,9 +59,9 @@ class MLPLarge0(nn.Module):
         self.linear_relu_stack = nn.Sequential(
             nn.Linear(28 * 28, 100),  # input dim
             nn.ReLU(),
-            nn.Linear(100, 100), # hidden layer 1
+            nn.Linear(100, 500), # hidden layer 1
             nn.ReLU(),
-            nn.Linear(100, 100), # hidden layer 2
+            nn.Linear(500, 100), # hidden layer 2
             nn.ReLU(),            
             nn.Linear(100, 1),  # binary classify into 0,1
         )
