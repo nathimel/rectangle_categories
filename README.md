@@ -14,7 +14,7 @@ Steps of the experiment
 
 ## Running
 
-Reproduce the experiment by running `./run_full_experiment.sh`
+Reproduce the experiment by running `./run_full_experiment.sh path_to_config_file`
 
 This calls the following scripts which can be run individually:
 
