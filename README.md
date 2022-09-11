@@ -29,3 +29,9 @@ This calls the following scripts which can be run individually:
 `python3 src/analyze.py path_to_config_file`
 
 A YAML configuration file should be created in [/configs](/configs) specifying parameters of the experiment (such as NN architecture, etc).
+
+
+TODO: 
+
+- change the input to be coordinates, so that features now encode information about distance of the stimulus to previously seen stimuli.
+- try other learners, most obviously Decision Trees, bayesian classifiers, etc.
