@@ -18,3 +18,4 @@ learner: MLP1
 num_epochs: 200
 batch_size: 8 # each category dataset has length (small: 16) or (large: 784)
 learning_rate: 1e-3
+optimizer: Adam # Adam, SGD

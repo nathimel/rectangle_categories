@@ -120,8 +120,9 @@ def get_dataloader(fn: str, batch_size: int) -> DataLoader:
     return train_dataloader
 
 
-def get_optimizer(name: str):
-    pass
+def get_optimizer(name: str) -> torch.optim.Optimizer:
+    """Utility function to return a pytorch optimizer from a string name from config file."""
+    return {"SGD": torch.optim.SGD, "Adam": torch.optim.Adam}[name]
 
 
 def train_learners(
@@ -166,7 +167,7 @@ def train_learners(
         if verbose:
             print(model)
         loss_fn = torch.nn.BCELoss()
-        optimizer = get_optimizer(optimizer_name)
+        optimizer = get_optimizer(optimizer_name)(model.parameters(), lr=lr)
         # optimizer = torch.optim.SGD(model.parameters(), lr=lr)
 
         # Main training loop
