@@ -8,12 +8,24 @@ from torch import nn
 # a multilayer perceptron.
 ############################################################################
 
-class MLP0(nn.Module):
+def get_coordinates(x: torch.Tensor):
+    """Get the coordinate pair (i,j) of a 2D one-hot vector."""
+    t = torch.nonzero(x).squeeze(0) # of shape [batch_size, 3]
+    t = t[:, 1:].type(torch.float) # get all but first column
+    return t # shape [batch_size, 2]
+
+class MLP(nn.Module):
+    def __init__(self) -> None:
+        super(MLP, self).__init__()
+        self.coordinates = get_coordinates
+
+class MLP0(MLP):
     def __init__(self) -> None:
         super(MLP0, self).__init__()
-        self.flatten = nn.Flatten()
+        self.flatten = nn.Flatten()        
         self.linear_relu_stack = nn.Sequential(
-            nn.Linear(4 * 4, 16),  # input dim
+            # nn.Linear(4 * 4, 16),  # input dim
+            nn.Linear(2, 16),
             nn.ReLU(),
             nn.Linear(16, 16), # hidden layer 1
             nn.ReLU(),
@@ -23,36 +35,41 @@ class MLP0(nn.Module):
         )
 
     def forward(self, x):
-        x = self.flatten(x)
+        # x = self.flatten(x)
+        x = self.coordinates(x)
         logit = self.linear_relu_stack(x)
         output = torch.sigmoid(logit)
         return output
 
-class MLP1(nn.Module):
+class MLP1(MLP):
     def __init__(self) -> None:
         super(MLP1, self).__init__()
         self.flatten = nn.Flatten()
         self.linear_relu_stack = nn.Sequential(
-            nn.Linear(4 * 4, 64),  # input dim
+            nn.Linear(2, 100),  # input dim
             nn.ReLU(),
-            nn.Linear(64, 64),
+            nn.Linear(100, 500), # hidden layer 1
             nn.ReLU(),
-            nn.Linear(64, 64),
-            nn.ReLU(),
-            nn.Linear(64, 64),
-            nn.ReLU(),
-            nn.Linear(64, 64),
-            nn.ReLU(),                                    
-            nn.Linear(64, 1),  # binary classify into 0,1
+            nn.Linear(500, 100), # hidden layer 2
+            nn.ReLU(),            
+            nn.Linear(100, 1),  # binary classify into 0,1
         )
 
     def forward(self, x):
-        x = self.flatten(x)
+        # x = self.flatten(x)
+        x = self.coordinates(x)        
+        logit = self.linear_relu_stack(x)
+        output = torch.sigmoid(logit)
+        return output    
+
+    def forward(self, x):
+        # x = self.flatten(x)
+        x = self.coordinates(x)        
         logit = self.linear_relu_stack(x)
         output = torch.sigmoid(logit)
         return output
 
-class MLPLarge0(nn.Module):
+class MLPLarge0(MLP):
     def __init__(self) -> None:
         super(MLPLarge0, self).__init__()
         self.flatten = nn.Flatten()
@@ -68,6 +85,7 @@ class MLPLarge0(nn.Module):
 
     def forward(self, x):
         x = self.flatten(x)
+        x = self.coordinates(x)        
         logit = self.linear_relu_stack(x)
         output = torch.sigmoid(logit)
         return output    
@@ -80,7 +98,11 @@ class MLPLarge0(nn.Module):
 # Note that pytorch convolution-based layers demands we reshape our input from [batch, width, height] into Tensors of shape [batch, channels, width, height]
 ############################################################################
 
-class CNN0(nn.Module):
+class CNN(nn.Module):
+    def __init__(self) -> None:
+        super(CNN, self).__init__()
+
+class CNN0(CNN):
     def __init__(self) -> None:
         super(CNN0, self).__init__()
         # input shape: [batch_size, in_channels, H, W]
@@ -156,7 +178,7 @@ class CNN0(nn.Module):
         x = torch.sigmoid(x)
         return x
 
-class CNN1(nn.Module):
+class CNN1(CNN):
     def __init__(self) -> None:
         super(CNN1, self).__init__()
         # input shape: [batch_size, in_channels, H, W]
@@ -219,7 +241,7 @@ class CNN1(nn.Module):
         x = torch.sigmoid(x)
         return x
 
-class CNN2(nn.Module):
+class CNN2(CNN):
     """Copied from https://medium.com/@nutanbhogendrasharma/pytorch-convolutional-neural-network-with-mnist-dataset-4e8a4265e118
     """
     def __init__(self):

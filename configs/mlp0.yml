@@ -1,6 +1,6 @@
 # experiment params
 random_seed: 42
-data_size: large # 'large' or 'small'
+data_size: small # 'large' or 'small'
 sample_size: 14 # number of NNs to train on each category
 verbose: False # whether to print intermediate output
 
