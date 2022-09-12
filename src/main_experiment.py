@@ -120,12 +120,17 @@ def get_dataloader(fn: str, batch_size: int) -> DataLoader:
     return train_dataloader
 
 
+def get_optimizer(name: str):
+    pass
+
+
 def train_learners(
     train_dataloader: DataLoader,
     learner_class: nn.Module,
     num_learners: int = 1,
     epochs: int = 4,
     lr: float = 1e-3,
+    optimizer_name: str = "SGD",
     category_name: str = None,
     verbose: bool = False,
 ) -> np.ndarray:
@@ -139,6 +144,8 @@ def train_learners(
         epochs: the number of complete passes through the data to train for
 
         lr: learning rate
+
+        optimizer_name: a string representing what optimizer to use, e.g. 'Adam', 'SGD'
 
         category_name: the name of the category (e.g. "1")
 
@@ -159,7 +166,8 @@ def train_learners(
         if verbose:
             print(model)
         loss_fn = torch.nn.BCELoss()
-        optimizer = torch.optim.SGD(model.parameters(), lr=lr)
+        optimizer = get_optimizer(optimizer_name)
+        # optimizer = torch.optim.SGD(model.parameters(), lr=lr)
 
         # Main training loop
         running_loss = 0
@@ -198,6 +206,7 @@ def main():
     batch_size = configs["batch_size"]
     sample_size = configs["sample_size"]
     lr = float(configs["learning_rate"])
+    optimizer = configs["optimizer"]
     dataset_folder = configs["filepaths"]["datasets"]
     results_fn = configs["filepaths"]["learning_results"]
     verbose = configs["verbose"]
@@ -218,6 +227,7 @@ def main():
         "num_learners": sample_size,
         "epochs": epochs,
         "lr": lr,
+        "optimizer_name": optimizer,
         "verbose": verbose,
     }
     category_results = [
