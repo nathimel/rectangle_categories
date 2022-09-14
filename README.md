@@ -33,5 +33,6 @@ A YAML configuration file should be created in [/configs](/configs) specifying p
 
 TODO: 
 
-- change the input to be coordinates, so that features now encode information about distance of the stimulus to previously seen stimuli.
+- try larger batch sizes.
 - try other learners, most obviously Decision Trees, bayesian classifiers, etc.
+
