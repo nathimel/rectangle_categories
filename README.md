@@ -1,5 +1,7 @@
 # Rectangle Categories
 
+![](outputs/dev/plot.png)
+
 This repo is home for a pilot experiment for measuring whether simple NNs track the cognitive complexity of 2D categories.
 
 ## Overview
